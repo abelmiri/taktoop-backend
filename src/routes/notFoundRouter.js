@@ -1,10 +1,10 @@
 const notFoundRooter = (app) =>
 {
     app.route("*")
-        .get((req, res) => res.status(400).send("seems to be a wrong get! this url doesnt exist on api!"))
-        .post((req, res) => res.status(400).send("seems to be a wrong post! this url doesnt exist on api!"))
-        .patch((req, res) => res.status(400).send("seems to be a wrong patch! this url doesnt exist on api!"))
-        .delete((req, res) => res.status(400).send("seems to be a wrong delete! this url doesnt exist on api!"))
+        .get((req, res) => res.status(404).sendFile(__dirname.slice(0, -7) + "/404/index.html"))
+        .post((req, res) => res.status(404).sendFile(__dirname.slice(0, -7) + "/404/index.html"))
+        .patch((req, res) => res.status(404).sendFile(__dirname.slice(0, -7) + "/404/index.html"))
+        .delete((req, res) => res.status(404).sendFile(__dirname.slice(0, -7) + "/404/index.html"))
 }
 
 export default notFoundRooter
