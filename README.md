@@ -2,7 +2,7 @@
 **a cool, secure and fast API based on node, express and mongo ;)**
 ## api routes
 > /post
-###### posts model
+###### posts model:
 ```
 const postModel = new schema({
     category_id: {
@@ -28,20 +28,51 @@ const postModel = new schema({
         type: String,
         required: "Enter picture!",
     },
-    creator_id: {
+    creator_id: { // Don't Send
         type: schema.Types.ObjectId,
     },
-    created_date: {
+    created_date: { // Don't Send
         type: Date,
         default: Date.now,
     },
 })
 ```
-###### /user
-> users model:
+> /post-description
+###### post descriptions model:
+```
+const postDescriptionModel = new schema({
+    post_id: {
+        type: schema.Types.ObjectId,
+        index: true,
+        required: "Enter post_id!",
+    },
+    type: {
+        type: String,
+        enum: ["description", "bold", "picture", "video"],
+        default: "description",
+        required: "Enter type!",
+        trim: true,
+    },
+    content: String,
+    order: Number,
+    creator_id: { // Don't Send
+        type: schema.Types.ObjectId, 
+    },
+    created_date: { // Don't Send
+        type: Date,
+        default: Date.now,
+    },
+})
+```
+> /user/login
+> /user/sign-up
+> /user/update
+> /user/email-check
+> /user/phone-check
+###### users model:
 ```
 const userModel = new schema({
-    phone: {
+    phone: { // Don't Send for sign-up (send for update)
         type: String,
         trim: true,
         unique: true,
@@ -62,10 +93,10 @@ const userModel = new schema({
         maxlength: 128,
         required: "Enter password!",
     },
-    picture: {
+    picture: { // Don't Send for sign-up (send for update)
         type: String,
     },
-    role: {
+    role: { // Don't Send
         type: String,
         enum: ["user", "admin"],
         default: "user",
@@ -77,14 +108,14 @@ const userModel = new schema({
         maxlength: 32,
         required: "Enter name!",
     },
-    created_date: {
+    created_date: { // Don't Send
         type: Date,
         default: Date.now,
     },
 })
 ```
-###### /category
-> categories model:
+> /category
+###### categories model:
 ```
 const categoryModel = new schema({
     title: {
@@ -97,17 +128,17 @@ const categoryModel = new schema({
     address: {
         type: String,
     },
-    parent_id: {
+    parent_id: { // Don't Send for Main Categoies
         type: schema.Types.ObjectId,
         default: null,
     },
-    slider_picture: {
+    slider_picture: { // Send for Main Categories
         type: String,
     },
-    menu_picture: {
+    menu_picture: { // Send for Main Categories
         type: String,
     },
-    created_date: {
+    created_date: { // Don't Send
         type: Date,
         default: Date.now,
     },
