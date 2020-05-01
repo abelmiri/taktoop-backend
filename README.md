@@ -67,8 +67,11 @@ const postDescriptionModel = new schema({
 > /user/login
 
 > /user/sign-up
+
 > /user/update
+
 > /user/email-check
+
 > /user/phone-check
 ###### users model:
 ```
