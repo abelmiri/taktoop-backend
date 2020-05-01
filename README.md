@@ -1,8 +1,8 @@
 # taktoop-backend
 **a cool, secure and fast API based on node, express and mongo ;)**
 ## api routes
-###### /post
-> posts model:
+> /post
+###### posts model
 ```
 const postModel = new schema({
     category_id: {
