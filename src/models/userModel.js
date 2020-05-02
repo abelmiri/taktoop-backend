@@ -39,6 +39,7 @@ const userModel = new schema({
         maxlength: 32,
         required: "Enter name!",
     },
+	is_verified: Boolean,
     created_date: {
         type: Date,
         default: Date.now,
