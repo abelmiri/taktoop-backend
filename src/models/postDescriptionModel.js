@@ -16,6 +16,7 @@ const postDescriptionModel = new schema({
         trim: true,
     },
     content: String,
+	order: Number,
     creator_id: {
         type: schema.Types.ObjectId,
     },
