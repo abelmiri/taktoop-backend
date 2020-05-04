@@ -45,7 +45,13 @@ const create = (req, res) =>
                 }
                 else
                 {
-
+                    delete req.body.created_date
+                    const newCategory = new category({...req.body})
+                    newCategory.save((err, newCat) =>
+                    {
+                        if (err) res.status(400).send(err)
+                        else res.send(newCat)
+                    })
                 }
             }
             else res.status(401).send({message: "permission denied babe"})
@@ -53,19 +59,97 @@ const create = (req, res) =>
         .catch((result) => res.status(result.status).send({status: result.status, err: result.err}))
 }
 
-const get = (req, res) =>
+const get = (req, res) => category.find(null, null, {sort: "-created-date"}, (err, categories) => err ? res.status(500).send(err) : res.send(categories))
+
+const update = (req, res) =>
 {
-    category.find(null, (err, categories) =>
-    {
-        err ?
-            res.status(500).send(err) :
-            res.send(categories)
-    })
+    const {_id, email, phone} = req.headers.authorization
+    userController.verifyToken({_id, email, phone})
+        .then((result) =>
+            {
+                if (result.user.role === "admin")
+                {
+                    delete req.body.created_date
+                    if (req.files)
+                    {
+                        const {menu_picture, slider_picture} = req.files
+                        if (menu_picture)
+                            saveFile({folder: "pictures", file: menu_picture})
+                                .then((menuMediaAddress) =>
+                                    {
+                                        category.findOneAndUpdate(
+                                            {_id: req.body._id},
+                                            {...req.body, menu_picture: menuMediaAddress},
+                                            {useFindAndModify: false, runValidators: true},
+                                            (err, _) =>
+                                            {
+                                                if (err) res.status(500).send(err)
+                                                else console.log("menuMediaAddress", menuMediaAddress)
+                                            })
+                                    },
+                                )
+                                .catch((menuMediaResultErr) => res.status(500).send({message: "menu media saving error", menuMediaResultErr}))
+                        if (slider_picture)
+                            saveFile({folder: "pictures", file: slider_picture})
+                                .then((sliderMediaAddress) =>
+                                    {
+                                        category.findOneAndUpdate(
+                                            {_id: req.body._id},
+                                            {...req.body, slider_picture: sliderMediaAddress},
+                                            {useFindAndModify: false, runValidators: true},
+                                            (err, _) =>
+                                            {
+                                                if (err) res.status(500).send(err)
+                                                else console.log("sliderMediaAddress", sliderMediaAddress)
+                                            })
+                                    },
+                                )
+                                .catch((sliderMediaResultErr) => res.status(500).send({message: "slider media saving error", sliderMediaResultErr}))
+                        else if (!(menu_picture && slider_picture)) res.status(400).send({message: "send menu_picture || slider_picture for category"})
+                    }
+                    category.findOneAndUpdate(
+                        {_id: req.body._id},
+                        {...req.body},
+                        {new: true, useFindAndModify: false, runValidators: true},
+                        (err, updated) =>
+                        {
+                            if (err) res.status(500).send(err)
+                            else res.status(200).send(updated)
+                        })
+                }
+                else res.status(401).send({message: "permission denied babe"})
+            },
+        )
+    category.findOneAndUpdate(null, null, {sort: "-created-date"}, (err, categories) => err ? res.status(500).send(err) : res.send(categories))
 }
+
+const deleteOne = (req, res) =>
+{
+    const {_id, email, phone} = req.headers.authorization
+    userController.verifyToken({_id, email, phone})
+        .then((result) =>
+            {
+                if (result.user.role === "admin")
+                {
+                    category.findByIdAndDelete(
+                        req.body._id,
+                        (err, _) =>
+                        {
+                            if (err) res.status(500).send(err)
+                            else res.status(200).send({status: "deleted"})
+                        })
+                }
+                else res.status(401).send({message: "permission denied babe"})
+            },
+        )
+}
+
 
 const categoryController = {
     create,
     get,
+    update,
+    deleteOne,
 }
 
 export default categoryController

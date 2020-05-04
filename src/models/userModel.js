@@ -7,6 +7,7 @@ const userModel = new schema({
         type: String,
         trim: true,
         unique: true,
+		sparse: true,
         minlength: 11,
         maxlength: 11,
         index: true,
