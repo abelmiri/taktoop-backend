@@ -24,7 +24,7 @@ const create = (req, res) =>
                                 delete req.body.created_date
                                 delete req.body.creator_id
 
-                                const newPost = new Post({...req.body, picture: postMediaAddress})
+                                const newPost = new Post({...req.body, picture: postMediaAddress, creator_id: _id})
                                 newPost.save((err, post) =>
                                 {
                                     if (err) res.status(400).send(err)
@@ -39,6 +39,78 @@ const create = (req, res) =>
             else res.status(401).send({message: "permission denied babe"})
         })
         .catch((result) => res.status(result.status).send({status: result.status, err: result.err}))
+}
+
+const update = (req, res) =>
+{
+    const {_id, email, phone} = req.headers.authorization
+    userController.verifyToken({_id, email, phone})
+        .then((result) =>
+        {
+            if (result.user.role === "admin")
+            {
+                if (req.files && req.files.picture)
+                {
+                    const {picture} = req.files
+                    saveFile({folder: "pictures", file: picture})
+                        .then((postMediaAddress) =>
+                            {
+                                delete req.body.created_date
+                                delete req.body.creator_id
+
+                                Post.findOneAndUpdate(
+                                    {_id: req.body._id},
+                                    {...req.body, picture: postMediaAddress},
+                                    {new: true, useFindAndModify: false, runValidators: true},
+                                    (err, updated) =>
+                                    {
+                                        if (err) res.status(500).send(err)
+                                        else res.status(200).send(updated)
+                                    })
+                            },
+                        )
+                        .catch((postMediaResultErr) => res.status(500).send({message: "post media updating error", postMediaResultErr}))
+                }
+                else
+                {
+                    delete req.body.created_date
+                    delete req.body.creator_id
+
+                    Post.findOneAndUpdate(
+                        {_id: req.body._id},
+                        {...req.body},
+                        {new: true, useFindAndModify: false, runValidators: true},
+                        (err, updated) =>
+                        {
+                            if (err) res.status(500).send(err)
+                            else res.status(200).send(updated)
+                        })
+                }
+            }
+            else res.status(401).send({message: "permission denied babe"})
+        })
+        .catch((result) => res.status(result.status).send({status: result.status, err: result.err}))
+}
+
+const deleteOne = (req, res) =>
+{
+    const {_id, email, phone} = req.headers.authorization
+    userController.verifyToken({_id, email, phone})
+        .then((result) =>
+            {
+                if (result.user.role === "admin")
+                {
+                    Post.findByIdAndDelete(
+                        req.body._id,
+                        (err, _) =>
+                        {
+                            if (err) res.status(500).send(err)
+                            else res.status(200).send({status: "deleted"})
+                        })
+                }
+                else res.status(401).send({message: "permission denied babe"})
+            },
+        )
 }
 
 const createUpdatePostDescription = (req, res) =>
@@ -145,6 +217,8 @@ const get = (req, res) =>
 
 const categoryController = {
     create,
+    update,
+    deleteOne,
     createUpdatePostDescription,
     get,
 }

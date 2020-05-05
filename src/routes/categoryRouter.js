@@ -5,7 +5,7 @@ const categoryRouter = (app) =>
     app.route("/category")
         .get(categoryController.get)
         .post(categoryController.create)
-        .update(categoryController.update)
+        .patch(categoryController.update)
         .delete(categoryController.deleteOne)
 }
 

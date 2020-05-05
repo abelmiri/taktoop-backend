@@ -11,7 +11,6 @@ import data from "./data"
 import notFoundRooter from "./routes/notFoundRouter"
 import addHeaderAndCheckPermissions from "./functions/addHeaderAndCheckPermissions"
 
-
 // Normal Things Never Leave Us Alone ...
 const app = express()
 app.use(cors())
