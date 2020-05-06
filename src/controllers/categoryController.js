@@ -120,7 +120,6 @@ const update = (req, res) =>
                 else res.status(401).send({message: "permission denied babe"})
             },
         )
-    category.findOneAndUpdate(null, null, {sort: "-created-date"}, (err, categories) => err ? res.status(500).send(err) : res.send(categories))
 }
 
 const deleteOne = (req, res) =>
