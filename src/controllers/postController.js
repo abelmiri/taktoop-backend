@@ -183,7 +183,7 @@ const get = (req, res) =>
     const limit = parseInt(req.query.limit) > 0 ? parseInt(req.query.limit) : 10
     const skip = (req.query.page - 1 > 0 ? req.query.page - 1 : 0) * limit
     const options = {sort: "-created_date", skip, limit}
-    const title = req.body
+    const {title} = req.body
     Post.find(req.body, null, options, (err, posts) =>
     {
         if (err) res.status(500).send(err)
