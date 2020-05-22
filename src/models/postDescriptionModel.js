@@ -15,7 +15,10 @@ const postDescriptionModel = new schema({
         required: "Enter type!",
         trim: true,
     },
-    content: String,
+    content: {
+        type: String,
+        trim: true,
+    },
 	order: Number,
     creator_id: {
         type: schema.Types.ObjectId,
