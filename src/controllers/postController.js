@@ -160,7 +160,7 @@ const createUpdatePostDescription = (req, res) =>
                                     delete req.body.created_date
                                     delete req.body.creator_id
 
-                                    const newPostDescription = new PostDescription({...req.body, picture: postMediaAddress, creator_id: _id})
+                                    const newPostDescription = new PostDescription({...req.body, content: postMediaAddress, creator_id: _id})
                                     newPostDescription.save((err, post) =>
                                     {
                                         if (err) res.status(400).send(err)
@@ -183,30 +183,32 @@ const get = (req, res) =>
     const limit = parseInt(req.query.limit) > 0 ? parseInt(req.query.limit) : 10
     const skip = (req.query.page - 1 > 0 ? req.query.page - 1 : 0) * limit
     const options = {sort: "-created_date", skip, limit}
-    const {title} = req.body
+    const {title, _id} = req.body
     Post.find(req.body, null, options, (err, posts) =>
     {
         if (err) res.status(500).send(err)
         else if (title)
         {
-            PostDescription.find({post_id: title}, (err, postDescriptions) =>
+            PostDescription.find({post_id: _id}, (err, postDescriptions) =>
             {
                 if (err) res.status(500).send(err)
                 else
                 {
-                    userController.getUser(posts.creator_id)
+                    userController.getUser(posts[0].creator_id)
                         .then(briefUser =>
                         {
-                            posts.post_descriptions = postDescriptions
-                            posts.creator_name = briefUser.name
-                            posts.creator_picture = briefUser.picture
-                            res.send(posts)
+                            let fullPost = {...posts[0]._doc}
+                            fullPost.post_descriptions = postDescriptions
+                            fullPost.creator_name = briefUser.name
+                            fullPost.creator_picture = briefUser.picture
+                            res.send(fullPost)
                         })
                         .catch(error =>
                         {
-                            console.log(error)
-                            posts.post_descriptions = postDescriptions
-                            res.send(posts)
+                            console.log("user fetch error", error)
+                            let fullPost = {...posts[0]._doc}
+                            fullPost.post_descriptions = postDescriptions
+                            res.send(fullPost)
                         })
                 }
             })
