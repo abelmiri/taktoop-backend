@@ -11,6 +11,7 @@ const postRouter = (app) =>
     app.route("/post-description")
         .post(postController.createUpdatePostDescription)
         .patch(postController.createUpdatePostDescription)
+        .delete(postController.deletePostDescription)
 }
 
 export default postRouter

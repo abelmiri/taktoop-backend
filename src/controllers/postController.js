@@ -3,6 +3,7 @@ import postModel from "../models/postModel"
 import postDescriptionModel from "../models/postDescriptionModel"
 import userController from "../controllers/userController"
 import saveFile from "../functions/saveFile"
+import deleteFile from "../functions/deleteFile"
 
 const Post = mongoose.model("post", postModel)
 const PostDescription = mongoose.model("postDescription", postDescriptionModel)
@@ -232,11 +233,57 @@ const get = (req, res) =>
     })
 }
 
+const deletePostDescription = (req, res) =>
+{
+    const {_id, email, phone} = req.headers.authorization
+    userController.verifyToken({_id, email, phone})
+        .then((result) =>
+            {
+                if (result.user.role === "admin")
+                {
+                    PostDescription.findById(req.body._id, (err, postDescription) =>
+                    {
+                        if (err) res.status(500).send(err)
+                        else
+                        {
+                            if (postDescription)
+                            {
+                                if (postDescription.type === "picture" || postDescription.type === "video")
+                                    deleteFile({path: postDescription.content})
+                                        .then(msg =>
+                                        {
+                                            PostDescription.findByIdAndDelete(
+                                                postDescription._id,
+                                                (err, _) =>
+                                                {
+                                                    if (err) res.status(500).send(err)
+                                                    else res.status(200).send({status: msg})
+                                                })
+                                        })
+                                        .catch(error => res.status(500).send({status: "error while deleting content", error}))
+                                else PostDescription.findByIdAndDelete(
+                                    postDescription._id,
+                                    (err, _) =>
+                                    {
+                                        if (err) res.status(500).send(err)
+                                        else res.status(200).send({status: "deleted"})
+                                    })
+                            }
+                            else res.status(404).send({status: "not found"})
+                        }
+                    })
+                }
+                else res.status(401).send({message: "permission denied babe"})
+            },
+        )
+}
+
 const categoryController = {
     create,
     update,
     deleteOne,
     createUpdatePostDescription,
+    deletePostDescription,
     get,
 }
 
