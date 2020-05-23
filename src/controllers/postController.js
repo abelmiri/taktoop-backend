@@ -160,12 +160,27 @@ const createUpdatePostDescription = (req, res) =>
                                     delete req.body.created_date
                                     delete req.body.creator_id
 
-                                    const newPostDescription = new PostDescription({...req.body, content: postMediaAddress, creator_id: _id})
-                                    newPostDescription.save((err, post) =>
+                                    if (req.body._id)
                                     {
-                                        if (err) res.status(400).send(err)
-                                        else res.send(post)
-                                    })
+                                        PostDescription.findOneAndReplace(
+                                            {_id: req.body._id},
+                                            {...req.body, content: postMediaAddress, creator_id: _id},
+                                            {new: true, useFindAndModify: false, runValidators: true},
+                                            (err, updated) =>
+                                            {
+                                                if (err) res.status(500).send(err)
+                                                else res.status(200).send(updated)
+                                            })
+                                    }
+                                    else
+                                    {
+                                        const newPostDescription = new PostDescription({...req.body, content: postMediaAddress, creator_id: _id})
+                                        newPostDescription.save((err, post) =>
+                                        {
+                                            if (err) res.status(400).send(err)
+                                            else res.send(post)
+                                        })
+                                    }
                                 },
                             )
                             .catch((postMediaResultErr) => res.status(500).send({message: "post description media saving error", postMediaResultErr}))
@@ -180,16 +195,16 @@ const createUpdatePostDescription = (req, res) =>
 
 const get = (req, res) =>
 {
+    const {title, page} = req.query
     const limit = parseInt(req.query.limit) > 0 ? parseInt(req.query.limit) : 10
-    const skip = (req.query.page - 1 > 0 ? req.query.page - 1 : 0) * limit
+    const skip = (page - 1 > 0 ? page - 1 : 0) * limit
     const options = {sort: "-created_date", skip, limit}
-    const {title, _id} = req.body
-    Post.find(req.body, null, options, (err, posts) =>
+    Post.find(title ? {title} : null, null, options, (err, posts) =>
     {
         if (err) res.status(500).send(err)
         else if (title)
         {
-            PostDescription.find({post_id: _id}, (err, postDescriptions) =>
+            PostDescription.find({post_id: posts[0]._id}, null, {sort: "order"}, (err, postDescriptions) =>
             {
                 if (err) res.status(500).send(err)
                 else
@@ -198,9 +213,9 @@ const get = (req, res) =>
                         .then(briefUser =>
                         {
                             let fullPost = {...posts[0]._doc}
-                            fullPost.post_descriptions = postDescriptions
                             fullPost.creator_name = briefUser.name
                             fullPost.creator_picture = briefUser.picture
+                            fullPost.post_descriptions = postDescriptions
                             res.send(fullPost)
                         })
                         .catch(error =>

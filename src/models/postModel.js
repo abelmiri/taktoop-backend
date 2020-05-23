@@ -14,6 +14,7 @@ const postModel = new schema({
         unique: true,
         minLength: 5,
         maxLength: 80,
+        index: true,
     },
     short_description: {
         type: String,

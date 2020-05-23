@@ -8,9 +8,9 @@ const postRouter = (app) =>
         .patch(postController.update)
         .delete(postController.deleteOne)
 
-
     app.route("/post-description")
         .post(postController.createUpdatePostDescription)
+        .patch(postController.createUpdatePostDescription)
 }
 
 export default postRouter
