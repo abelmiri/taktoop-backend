@@ -130,7 +130,7 @@ const createUpdatePostDescription = (req, res) =>
                 {
                     if (req.body._id)
                     {
-                        PostDescription.findOneAndReplace(
+                        PostDescription.findOneAndUpdate(
                             {_id: req.body._id},
                             req.body,
                             {new: true, useFindAndModify: false, runValidators: true},
@@ -163,7 +163,7 @@ const createUpdatePostDescription = (req, res) =>
 
                                     if (req.body._id)
                                     {
-                                        PostDescription.findOneAndReplace(
+                                        PostDescription.findOneAndUpdate(
                                             {_id: req.body._id},
                                             {...req.body, content: postMediaAddress, creator_id: _id},
                                             {new: true, useFindAndModify: false, runValidators: true},
