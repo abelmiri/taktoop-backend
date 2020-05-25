@@ -126,7 +126,19 @@ const createUpdatePostDescription = (req, res) =>
                 delete req.body.created_date
                 delete req.body.creator_id
 
-                if (type === "description" || type === "bold")
+                if (req.body._id && req.body.order && !req.body.content && !req.body.type && !req.body.post_id)
+                {
+                    PostDescription.findOneAndUpdate(
+                        {_id: req.body._id},
+                        req.body,
+                        {new: true, useFindAndModify: false, runValidators: true},
+                        (err, updated) =>
+                        {
+                            if (err) res.status(500).send(err)
+                            else res.status(200).send(updated)
+                        })
+                }
+                else if (type === "description" || type === "bold")
                 {
                     if (req.body._id)
                     {
@@ -186,8 +198,12 @@ const createUpdatePostDescription = (req, res) =>
                             )
                             .catch((postMediaResultErr) => res.status(500).send({message: "post description media saving error", postMediaResultErr}))
                     }
-                    else res.status(400).send({message: "where is the content?"})
+                    else
+                    {
+                        res.status(400).send({message: "where is the content?"})
+                    }
                 }
+                else res.status(400).send({message: "where is the content?"})
             }
             else res.status(401).send({message: "permission denied babe"})
         })
