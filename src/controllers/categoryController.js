@@ -105,7 +105,6 @@ const update = (req, res) =>
                                     },
                                 )
                                 .catch((sliderMediaResultErr) => res.status(500).send({message: "slider media saving error", sliderMediaResultErr}))
-                        else if (!(menu_picture && slider_picture)) res.status(400).send({message: "send menu_picture || slider_picture for category"})
                     }
                     category.findOneAndUpdate(
                         {_id: req.body._id},
