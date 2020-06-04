@@ -130,7 +130,7 @@ const deleteOne = (req, res) =>
             {
                 if (result.user.role === "admin")
                 {
-                    category.findByIdAndDelete(
+                    category.remove(
                         {$or: [{_id: req.body._id}, {parent_id: req.body._id}]},
                         (err, _) =>
                         {
