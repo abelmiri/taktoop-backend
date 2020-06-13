@@ -35,6 +35,10 @@ const postModel = new schema({
         type: Date,
         default: Date.now,
     },
+    likes_count: {
+        type: Number,
+        default: 0,
+    },
     creator_id: {
         type: schema.Types.ObjectId,
     },

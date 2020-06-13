@@ -17,8 +17,13 @@ const addHeaderAndCheckPermissions = (app) =>
         {
             if (req.headers.authorization)
             {
-                delete req.headers.authorization
-                next()
+                tokenHelper.decodeToken(req.headers.authorization)
+                    .then((payload) =>
+                    {
+                        req.headers.authorization = {...payload}
+                        next()
+                    })
+                    .catch((result) => res.status(result.status || 403).send(result.err))
             }
             else next()
         }

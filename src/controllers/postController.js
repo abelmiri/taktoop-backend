@@ -1,11 +1,13 @@
 import mongoose from "mongoose"
 import postModel from "../models/postModel"
+import postLikeModel from "../models/postLikeModel"
 import postDescriptionModel from "../models/postDescriptionModel"
 import userController from "../controllers/userController"
 import saveFile from "../functions/saveFile"
 import deleteFile from "../functions/deleteFile"
 
 const Post = mongoose.model("post", postModel)
+const PostLikeModel = mongoose.model("postLike", postLikeModel)
 const PostDescription = mongoose.model("postDescription", postDescriptionModel)
 
 const create = (req, res) =>
@@ -226,26 +228,76 @@ const get = (req, res) =>
                 if (err) res.status(500).send(err)
                 else
                 {
-                    userController.getUser(posts[0].creator_id)
-                        .then(briefUser =>
+                    if (req.headers.authorization)
+                    {
+                        const user_id = req.headers.authorization._id
+                        PostLikeModel.findOne({user_id, post_id: posts[0]._id}, (err, takenLike) =>
                         {
-                            let fullPost = {...posts[0]._doc}
-                            fullPost.creator_name = briefUser.name
-                            fullPost.creator_picture = briefUser.picture
-                            fullPost.post_descriptions = postDescriptions
-                            res.send(fullPost)
+                            if (err) res.status(500).send(err)
+                            else
+                            {
+                                const is_liked = takenLike !== null
+                                userController.getUser(posts[0].creator_id)
+                                    .then(briefUser =>
+                                    {
+                                        let fullPost = {...posts[0]._doc}
+                                        fullPost.creator_name = briefUser.name
+                                        fullPost.creator_picture = briefUser.picture
+                                        fullPost.post_descriptions = postDescriptions
+                                        fullPost.is_liked = is_liked
+                                        res.send(fullPost)
+                                    })
+                                    .catch(error =>
+                                    {
+                                        console.log("user fetch error", error)
+                                        let fullPost = {...posts[0]._doc}
+                                        fullPost.post_descriptions = postDescriptions
+                                        fullPost.is_liked = is_liked
+                                        res.send(fullPost)
+                                    })
+                            }
                         })
-                        .catch(error =>
-                        {
-                            console.log("user fetch error", error)
-                            let fullPost = {...posts[0]._doc}
-                            fullPost.post_descriptions = postDescriptions
-                            res.send(fullPost)
-                        })
+                    }
+                    else
+                    {
+                        userController.getUser(posts[0].creator_id)
+                            .then(briefUser =>
+                            {
+                                let fullPost = {...posts[0]._doc}
+                                fullPost.creator_name = briefUser.name
+                                fullPost.creator_picture = briefUser.picture
+                                fullPost.post_descriptions = postDescriptions
+                                res.send(fullPost)
+                            })
+                            .catch(error =>
+                            {
+                                console.log("user fetch error", error)
+                                let fullPost = {...posts[0]._doc}
+                                fullPost.post_descriptions = postDescriptions
+                                res.send(fullPost)
+                            })
+                    }
                 }
             })
         }
-        else res.send(posts)
+        else
+        {
+            if (req.headers.authorization)
+            {
+                const user_id = req.headers.authorization._id
+                PostLikeModel.find({user_id, post_id: {$in: posts.reduce((sum, post) => [...sum, post._id], [])}}, (err, likes) =>
+                {
+                    if (err) res.status(500).send(err)
+                    else
+                    {
+                        const postsObj = posts.reduce((sum, conversation) => ({...sum, [conversation._id]: {...conversation.toJSON()}}), {})
+                        likes.forEach(like => postsObj[like.post_id].is_liked = true)
+                        res.send(Object.values(postsObj))
+                    }
+                })
+            }
+            else res.send(posts);
+        }
     })
 }
 
@@ -318,6 +370,55 @@ const deletePostDescription = (req, res) =>
         )
 }
 
+const addNewLike = (req, res) =>
+{
+    delete req.body.created_date
+    const {_id} = req.headers.authorization
+    const {post_id} = req.body
+    const newLike = new PostLikeModel({user_id: _id, post_id})
+    newLike.save((err, createdLike) =>
+    {
+        if (err) res.status(400).send(err)
+        else
+        {
+            Post.findOneAndUpdate(
+                {_id: post_id},
+                {$inc: {likes_count: 1}},
+                {useFindAndModify: false},
+                (err) =>
+                {
+                    if (err) res.status(500).send(err)
+                    else res.send(createdLike)
+                },
+            )
+        }
+    })
+}
+
+const deleteLike = (req, res) =>
+{
+    const {_id} = req.headers.authorization
+    const {post_id} = req.body
+    PostLikeModel.deleteOne({post_id, user_id: _id}, (err, statistic) =>
+    {
+        if (err) res.status(400).send(err)
+        else if (statistic.deletedCount === 1)
+        {
+            Post.findOneAndUpdate(
+                {_id: post_id},
+                {$inc: {likes_count: -1}},
+                {useFindAndModify: false},
+                (err) =>
+                {
+                    if (err) res.status(500).send(err)
+                    else res.send({message: "like deleted successfully"})
+                },
+            )
+        }
+        else res.status(404).send({message: "like not found!"})
+    })
+}
+
 const categoryController = {
     create,
     update,
@@ -327,6 +428,8 @@ const categoryController = {
     getBoldPosts,
     getPredictPosts,
     get,
+    addNewLike,
+    deleteLike,
 }
 
 export default categoryController

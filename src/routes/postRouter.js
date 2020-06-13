@@ -8,6 +8,10 @@ const postRouter = (app) =>
         .patch(postController.update)
         .delete(postController.deleteOne)
 
+    app.route("/post-like")
+        .post(postController.addNewLike)
+        .delete(postController.deleteLike)
+
     app.route("/bold-post")
         .get(postController.getBoldPosts)
 
