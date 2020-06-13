@@ -249,6 +249,30 @@ const get = (req, res) =>
     })
 }
 
+const getBoldPosts = (req, res) =>
+{
+    const limit = parseInt(req.query.limit) > 0 ? parseInt(req.query.limit) : 8
+    const skip = (req.query.page - 1 > 0 ? req.query.page - 1 : 0) * limit
+    const options = {sort: "-created_date", skip, limit}
+    Post.find({is_bold: true}, null, options, (err, posts) =>
+    {
+        if (err) res.status(500).send(err)
+        else res.send(posts)
+    })
+}
+
+const getPredictPosts = (req, res) =>
+{
+    const limit = parseInt(req.query.limit) > 0 ? parseInt(req.query.limit) : 8
+    const skip = (req.query.page - 1 > 0 ? req.query.page - 1 : 0) * limit
+    const options = {sort: "-created_date", skip, limit}
+    Post.find({is_predict: {$gte: Date.now}}, null, options, (err, posts) =>
+    {
+        if (err) res.status(500).send(err)
+        else res.send(posts)
+    })
+}
+
 const deletePostDescription = (req, res) =>
 {
     const {_id, email, phone} = req.headers.authorization
@@ -300,6 +324,8 @@ const categoryController = {
     deleteOne,
     createUpdatePostDescription,
     deletePostDescription,
+    getBoldPosts,
+    getPredictPosts,
     get,
 }
 
