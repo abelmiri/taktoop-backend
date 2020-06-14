@@ -27,6 +27,18 @@ const postModel = new schema({
         type: String,
         required: "Enter picture!",
     },
+    is_bold: {
+        type: Boolean,
+        default: false,
+    },
+    is_predict: {
+        type: Date,
+        default: Date.now,
+    },
+    likes_count: {
+        type: Number,
+        default: 0,
+    },
     creator_id: {
         type: schema.Types.ObjectId,
     },

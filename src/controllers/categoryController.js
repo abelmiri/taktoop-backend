@@ -142,7 +142,6 @@ const deleteOne = (req, res) =>
         )
 }
 
-
 const categoryController = {
     create,
     get,
