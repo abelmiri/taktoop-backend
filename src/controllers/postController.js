@@ -214,11 +214,11 @@ const createUpdatePostDescription = (req, res) =>
 
 const get = (req, res) =>
 {
-    const {title, page} = req.query
+    const {title, page, category_id} = req.query
     const limit = parseInt(req.query.limit) > 0 ? parseInt(req.query.limit) : 10
     const skip = (page - 1 > 0 ? page - 1 : 0) * limit
     const options = {sort: "-created_date", skip, limit}
-    Post.find(title ? {title} : null, null, options, (err, posts) =>
+    Post.find(title ? {title} : category_id ? {category_id} : null, null, options, (err, posts) =>
     {
         if (err) res.status(500).send(err)
         else if (title)
@@ -296,7 +296,7 @@ const get = (req, res) =>
                     }
                 })
             }
-            else res.send(posts);
+            else res.send(posts)
         }
     })
 }
