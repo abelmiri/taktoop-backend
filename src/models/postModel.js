@@ -33,7 +33,6 @@ const postModel = new schema({
     },
     is_predict: {
         type: Date,
-        default: Date.now,
     },
     likes_count: {
         type: Number,
