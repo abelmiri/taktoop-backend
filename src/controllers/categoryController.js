@@ -59,7 +59,7 @@ const create = (req, res) =>
         .catch((result) => res.status(result.status).send({status: result.status, err: result.err}))
 }
 
-const get = (req, res) => category.find(null, null, {sort: "-created-date"}, (err, categories) => err ? res.status(500).send(err) : res.send(categories))
+const get = (req, res) => category.find(null, null, {sort: "-created_date"}, (err, categories) => err ? res.status(500).send(err) : res.send(categories))
 
 const update = (req, res) =>
 {

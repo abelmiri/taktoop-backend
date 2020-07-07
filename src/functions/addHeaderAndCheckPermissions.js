@@ -31,7 +31,8 @@ const addHeaderAndCheckPermissions = (app) =>
             req.originalUrl.slice(0, 5) === "/user" ||
             req.originalUrl.slice(0, 9) === "/category" ||
             req.originalUrl.slice(0, 5) === "/post" ||
-            req.originalUrl.slice(0, 5) === "/post-description"
+            req.originalUrl.slice(0, 17) === "/post-description" ||
+            req.originalUrl.slice(0, 5) === "/link"
         )
         {
             if (req.headers.authorization)
