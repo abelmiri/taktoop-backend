@@ -124,6 +124,34 @@ const update = (req, res) =>
     )
 }
 
+const changePassword = (req, res) =>
+{
+    const {password, newPassword} = req.body
+    const {_id, email, phone} = req.headers.authorization
+    verifyToken({_id, email, phone})
+        .then((result) =>
+        {
+            if (result.user.password === password)
+            {
+                user.findByIdAndUpdate(
+                    {_id},
+                    {password: newPassword},
+                    {new: true, useFindAndModify: false, runValidators: true},
+                    (err, updated) =>
+                    {
+                        if (err) res.status(500).send(err)
+                        else res.status(200).send(updated)
+                    },
+                )
+            }
+            else
+            {
+                res.status(401).send({message: "wrong password"})
+            }
+        })
+        .catch((result) => res.status(result.status).send({status: result.status, err: result.err}))
+}
+
 const verifyToken = ({_id, email, phone}) =>
 {
     return new Promise((resolve, reject) =>
@@ -175,6 +203,7 @@ const userController = {
     login,
     signUp,
     update,
+    changePassword,
     verifyToken,
     verifyTokenRoute,
 }

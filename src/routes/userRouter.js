@@ -15,7 +15,10 @@ const userRouter = (app) =>
         .post(userController.signUp)
 
     app.route("/user/update")
-        .post(userController.update)
+        .patch(userController.update)
+
+    app.route("/user/password")
+        .post(userController.changePassword)
 
     app.route("/user/verify-token")
         .post(userController.verifyTokenRoute)

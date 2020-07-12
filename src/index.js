@@ -5,6 +5,7 @@ import fileUpload from "express-fileupload"
 import mongoose from "mongoose"
 import rootRouter from "./routes/rootRouter"
 import userRouter from "./routes/userRouter"
+import adminRouter from "./routes/adminRoute";
 import categoryRouter from "./routes/categoryRouter"
 import postRouter from "./routes/postRouter"
 import data from "./data"
@@ -28,6 +29,7 @@ addHeaderAndCheckPermissions(app)
 // Routing Shits
 rootRouter(app)
 userRouter(app)
+adminRouter(app)
 categoryRouter(app)
 postRouter(app)
 notFoundRooter(app) // & at the end
