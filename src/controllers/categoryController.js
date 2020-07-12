@@ -59,7 +59,7 @@ const create = (req, res) =>
         .catch((result) => res.status(result.status).send({status: result.status, err: result.err}))
 }
 
-const get = (req, res) => category.find(null, null, {sort: "-created-date"}, (err, categories) => err ? res.status(500).send(err) : res.send(categories))
+const get = (req, res) => category.find(null, null, {sort: "-created_date"}, (err, categories) => err ? res.status(500).send(err) : res.send(categories))
 
 const update = (req, res) =>
 {
@@ -105,7 +105,6 @@ const update = (req, res) =>
                                     },
                                 )
                                 .catch((sliderMediaResultErr) => res.status(500).send({message: "slider media saving error", sliderMediaResultErr}))
-                        else if (!(menu_picture && slider_picture)) res.status(400).send({message: "send menu_picture || slider_picture for category"})
                     }
                     category.findOneAndUpdate(
                         {_id: req.body._id},
@@ -130,7 +129,7 @@ const deleteOne = (req, res) =>
             {
                 if (result.user.role === "admin")
                 {
-                    category.findByIdAndDelete(
+                    category.remove(
                         {$or: [{_id: req.body._id}, {parent_id: req.body._id}]},
                         (err, _) =>
                         {
@@ -142,7 +141,6 @@ const deleteOne = (req, res) =>
             },
         )
 }
-
 
 const categoryController = {
     create,

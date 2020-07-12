@@ -14,6 +14,7 @@ const postModel = new schema({
         unique: true,
         minLength: 5,
         maxLength: 80,
+        index: true,
     },
     short_description: {
         type: String,
@@ -25,6 +26,17 @@ const postModel = new schema({
     picture: {
         type: String,
         required: "Enter picture!",
+    },
+    is_bold: {
+        type: Boolean,
+        default: false,
+    },
+    is_predict: {
+        type: Date,
+    },
+    likes_count: {
+        type: Number,
+        default: 0,
     },
     creator_id: {
         type: schema.Types.ObjectId,
