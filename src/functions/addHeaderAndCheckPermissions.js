@@ -13,7 +13,8 @@ const addHeaderAndCheckPermissions = (app) =>
             (req.originalUrl.slice(0, 13) === "/user/sign-up" && req.method === "POST") ||
             (req.originalUrl.slice(0, 9) === "/category" && req.method === "GET") ||
             (req.originalUrl.slice(0, 5) === "/post" && req.method === "GET") ||
-            (req.originalUrl.slice(0, 5) === "/link" && req.method === "GET")
+            (req.originalUrl.slice(0, 5) === "/link" && req.method === "GET") ||
+            (req.originalUrl.slice(0, 9) === "/site-map" && req.method === "GET")
         )
         {
             if (req.headers.authorization)

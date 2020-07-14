@@ -1,17 +1,18 @@
+import bodyParser from "body-parser"
 import cors from "cors"
 import express from "express"
-import bodyParser from "body-parser"
 import fileUpload from "express-fileupload"
 import mongoose from "mongoose"
-import rootRouter from "./routes/rootRouter"
-import userRouter from "./routes/userRouter"
 import adminRouter from "./routes/adminRoute";
 import categoryRouter from "./routes/categoryRouter"
-import postRouter from "./routes/postRouter"
 import linkRouter from "./routes/linkRoute"
-import data from "./data"
-import notFoundRooter from "./routes/notFoundRouter"
+import postRouter from "./routes/postRouter"
+import rootRouter from "./routes/rootRouter"
+import siteMapRouter from "./routes/siteMapRouter";
+import userRouter from "./routes/userRouter"
 import addHeaderAndCheckPermissions from "./functions/addHeaderAndCheckPermissions"
+import notFoundRooter from "./routes/notFoundRouter"
+import data from "./data"
 
 // Normal Things Never Leave Us Alone ...
 const app = express()
@@ -29,11 +30,12 @@ addHeaderAndCheckPermissions(app)
 
 // Routing Shits
 rootRouter(app)
-userRouter(app)
 adminRouter(app)
 categoryRouter(app)
 postRouter(app)
 linkRouter(app)
+userRouter(app)
+siteMapRouter(app)
 notFoundRooter(app) // & at the end
 
 // Eventually Run The Fucking Server
