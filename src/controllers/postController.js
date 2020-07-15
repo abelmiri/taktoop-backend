@@ -279,20 +279,46 @@ const get = (req, res) =>
         if (err) res.status(500).send(err)
         else if (title)
         {
-            PostDescription.find({post_id: posts[0]._id}, null, {sort: "order"}, (err, postDescriptions) =>
-            {
-                if (err) res.status(500).send(err)
-                else
+            posts[0] && addNewView(posts[0]._id)
+                .then(_ =>
                 {
-                    if (req.headers.authorization)
+                    PostDescription.find({post_id: posts[0]._id}, null, {sort: "order"}, (err, postDescriptions) =>
                     {
-                        const user_id = req.headers.authorization._id
-                        PostLikeModel.findOne({user_id, post_id: posts[0]._id}, (err, takenLike) =>
+                        if (err) res.status(500).send(err)
+                        else
                         {
-                            if (err) res.status(500).send(err)
+                            if (req.headers.authorization)
+                            {
+                                const user_id = req.headers.authorization._id
+                                PostLikeModel.findOne({user_id, post_id: posts[0]._id}, (err, takenLike) =>
+                                {
+                                    if (err) res.status(500).send(err)
+                                    else
+                                    {
+                                        const is_liked = takenLike !== null
+                                        userController.getUser(posts[0].creator_id)
+                                            .then(briefUser =>
+                                            {
+                                                let fullPost = {...posts[0]._doc}
+                                                fullPost.creator_name = briefUser.name
+                                                fullPost.creator_picture = briefUser.picture
+                                                fullPost.post_descriptions = postDescriptions
+                                                fullPost.is_liked = is_liked
+                                                res.send(fullPost)
+                                            })
+                                            .catch(error =>
+                                            {
+                                                console.log("user fetch error", error)
+                                                let fullPost = {...posts[0]._doc}
+                                                fullPost.post_descriptions = postDescriptions
+                                                fullPost.is_liked = is_liked
+                                                res.send(fullPost)
+                                            })
+                                    }
+                                })
+                            }
                             else
                             {
-                                const is_liked = takenLike !== null
                                 userController.getUser(posts[0].creator_id)
                                     .then(briefUser =>
                                     {
@@ -300,7 +326,6 @@ const get = (req, res) =>
                                         fullPost.creator_name = briefUser.name
                                         fullPost.creator_picture = briefUser.picture
                                         fullPost.post_descriptions = postDescriptions
-                                        fullPost.is_liked = is_liked
                                         res.send(fullPost)
                                     })
                                     .catch(error =>
@@ -308,33 +333,13 @@ const get = (req, res) =>
                                         console.log("user fetch error", error)
                                         let fullPost = {...posts[0]._doc}
                                         fullPost.post_descriptions = postDescriptions
-                                        fullPost.is_liked = is_liked
                                         res.send(fullPost)
                                     })
                             }
-                        })
-                    }
-                    else
-                    {
-                        userController.getUser(posts[0].creator_id)
-                            .then(briefUser =>
-                            {
-                                let fullPost = {...posts[0]._doc}
-                                fullPost.creator_name = briefUser.name
-                                fullPost.creator_picture = briefUser.picture
-                                fullPost.post_descriptions = postDescriptions
-                                res.send(fullPost)
-                            })
-                            .catch(error =>
-                            {
-                                console.log("user fetch error", error)
-                                let fullPost = {...posts[0]._doc}
-                                fullPost.post_descriptions = postDescriptions
-                                res.send(fullPost)
-                            })
-                    }
-                }
-            })
+                        }
+                    })
+                })
+                .catch(_err => res.status(500).send(_err))
         }
         else
         {
@@ -424,6 +429,22 @@ const deletePostDescription = (req, res) =>
                 else res.status(401).send({message: "permission denied babe"})
             },
         )
+}
+
+const addNewView = (post_id) =>
+{
+    return new Promise(((resolve, reject) =>
+            Post.findOneAndUpdate(
+                {_id: post_id},
+                {$inc: {views_count: 1}},
+                {useFindAndModify: false},
+                (err) =>
+                {
+                    if (err) reject({status: 500, err})
+                    else resolve({status: 200})
+                },
+            )
+    ))
 }
 
 const addNewLike = (req, res) =>

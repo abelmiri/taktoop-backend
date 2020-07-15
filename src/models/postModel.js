@@ -38,6 +38,10 @@ const postModel = new schema({
         type: Number,
         default: 0,
     },
+    views_count: {
+        type: Number,
+        default: 0,
+    },
     creator_id: {
         type: schema.Types.ObjectId,
     },
