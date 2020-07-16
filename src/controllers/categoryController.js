@@ -11,7 +11,7 @@ const create = (req, res) =>
     userController.verifyToken({_id, email, phone})
         .then((result) =>
         {
-            if (result.user.role === "admin")
+            if (result.user.role === "admin" || result.user.role === "system")
             {
                 const {parent_id} = req.body
                 if (!parent_id)
@@ -67,7 +67,7 @@ const update = (req, res) =>
     userController.verifyToken({_id, email, phone})
         .then((result) =>
             {
-                if (result.user.role === "admin")
+                if (result.user.role === "admin" || result.user.role === "system")
                 {
                     delete req.body.created_date
                     if (req.files)
@@ -127,7 +127,7 @@ const deleteOne = (req, res) =>
     userController.verifyToken({_id, email, phone})
         .then((result) =>
             {
-                if (result.user.role === "admin")
+                if (result.user.role === "admin" || result.user.role === "system")
                 {
                     category.remove(
                         {$or: [{_id: req.body._id}, {parent_id: req.body._id}]},

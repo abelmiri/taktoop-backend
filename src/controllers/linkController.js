@@ -10,7 +10,7 @@ const create = (req, res) =>
     userController.verifyToken({_id, email, phone})
         .then((result) =>
         {
-            if (result.user.role === "admin")
+            if (result.user.role === "admin" || result.user.role === "system")
             {
                 delete req.body.created_date
                 const newLink = new link({...req.body, creator_id: _id})
@@ -38,7 +38,7 @@ const update = (req, res) =>
     userController.verifyToken({_id, email, phone})
         .then((result) =>
             {
-                if (result.user.role === "admin")
+                if (result.user.role === "admin" || result.user.role === "system")
                 {
                     delete req.body.created_date
                     delete req.body.creator_id
@@ -63,7 +63,7 @@ const deleteOne = (req, res) =>
     userController.verifyToken({_id, email, phone})
         .then((result) =>
             {
-                if (result.user.role === "admin")
+                if (result.user.role === "admin" || result.user.role === "system")
                 {
                     link.findByIdAndDelete(
                         req.body._id,

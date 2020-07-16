@@ -16,7 +16,7 @@ const create = (req, res) =>
     userController.verifyToken({_id, email, phone})
         .then((result) =>
         {
-            if (result.user.role === "admin")
+            if (result.user.role === "admin" || result.user.role === "system")
             {
                 const {picture} = req.files
                 if (picture)
@@ -50,7 +50,7 @@ const update = (req, res) =>
     userController.verifyToken({_id, email, phone})
         .then((result) =>
         {
-            if (result.user.role === "admin")
+            if (result.user.role === "admin" || result.user.role === "system")
             {
                 const {is_predict} = req.body
                 if (is_predict === "null" || is_predict === null)
@@ -157,7 +157,7 @@ const deleteOne = (req, res) =>
     userController.verifyToken({_id, email, phone})
         .then((result) =>
             {
-                if (result.user.role === "admin")
+                if (result.user.role === "admin" || result.user.role === "system")
                 {
                     Post.findByIdAndDelete(
                         req.body._id,
@@ -178,7 +178,7 @@ const createUpdatePostDescription = (req, res) =>
     userController.verifyToken({_id, email, phone})
         .then((result) =>
         {
-            if (result.user.role === "admin")
+            if (result.user.role === "admin" || result.user.role === "system")
             {
                 const {type} = req.body
                 delete req.body.created_date
@@ -279,67 +279,68 @@ const get = (req, res) =>
         if (err) res.status(500).send(err)
         else if (title)
         {
-            posts[0] && addNewView(posts[0]._id)
-                .then(_ =>
-                {
-                    PostDescription.find({post_id: posts[0]._id}, null, {sort: "order"}, (err, postDescriptions) =>
+            posts[0] ? addNewView(posts[0]._id)
+                    .then(_ =>
                     {
-                        if (err) res.status(500).send(err)
-                        else
+                        PostDescription.find({post_id: posts[0]._id}, null, {sort: "order"}, (err, postDescriptions) =>
                         {
-                            if (req.headers.authorization)
-                            {
-                                const user_id = req.headers.authorization._id
-                                PostLikeModel.findOne({user_id, post_id: posts[0]._id}, (err, takenLike) =>
-                                {
-                                    if (err) res.status(500).send(err)
-                                    else
-                                    {
-                                        const is_liked = takenLike !== null
-                                        userController.getUser(posts[0].creator_id)
-                                            .then(briefUser =>
-                                            {
-                                                let fullPost = {...posts[0]._doc}
-                                                fullPost.creator_name = briefUser.name
-                                                fullPost.creator_picture = briefUser.picture
-                                                fullPost.post_descriptions = postDescriptions
-                                                fullPost.is_liked = is_liked
-                                                res.send(fullPost)
-                                            })
-                                            .catch(error =>
-                                            {
-                                                console.log("user fetch error", error)
-                                                let fullPost = {...posts[0]._doc}
-                                                fullPost.post_descriptions = postDescriptions
-                                                fullPost.is_liked = is_liked
-                                                res.send(fullPost)
-                                            })
-                                    }
-                                })
-                            }
+                            if (err) res.status(500).send(err)
                             else
                             {
-                                userController.getUser(posts[0].creator_id)
-                                    .then(briefUser =>
+                                if (req.headers.authorization)
+                                {
+                                    const user_id = req.headers.authorization._id
+                                    PostLikeModel.findOne({user_id, post_id: posts[0]._id}, (err, takenLike) =>
                                     {
-                                        let fullPost = {...posts[0]._doc}
-                                        fullPost.creator_name = briefUser.name
-                                        fullPost.creator_picture = briefUser.picture
-                                        fullPost.post_descriptions = postDescriptions
-                                        res.send(fullPost)
+                                        if (err) res.status(500).send(err)
+                                        else
+                                        {
+                                            const is_liked = takenLike !== null
+                                            userController.getUser(posts[0].creator_id)
+                                                .then(briefUser =>
+                                                {
+                                                    let fullPost = {...posts[0]._doc}
+                                                    fullPost.creator_name = briefUser.name
+                                                    fullPost.creator_picture = briefUser.picture
+                                                    fullPost.post_descriptions = postDescriptions
+                                                    fullPost.is_liked = is_liked
+                                                    res.send(fullPost)
+                                                })
+                                                .catch(error =>
+                                                {
+                                                    console.log("user fetch error", error)
+                                                    let fullPost = {...posts[0]._doc}
+                                                    fullPost.post_descriptions = postDescriptions
+                                                    fullPost.is_liked = is_liked
+                                                    res.send(fullPost)
+                                                })
+                                        }
                                     })
-                                    .catch(error =>
-                                    {
-                                        console.log("user fetch error", error)
-                                        let fullPost = {...posts[0]._doc}
-                                        fullPost.post_descriptions = postDescriptions
-                                        res.send(fullPost)
-                                    })
+                                }
+                                else
+                                {
+                                    userController.getUser(posts[0].creator_id)
+                                        .then(briefUser =>
+                                        {
+                                            let fullPost = {...posts[0]._doc}
+                                            fullPost.creator_name = briefUser.name
+                                            fullPost.creator_picture = briefUser.picture
+                                            fullPost.post_descriptions = postDescriptions
+                                            res.send(fullPost)
+                                        })
+                                        .catch(error =>
+                                        {
+                                            console.log("user fetch error", error)
+                                            let fullPost = {...posts[0]._doc}
+                                            fullPost.post_descriptions = postDescriptions
+                                            res.send(fullPost)
+                                        })
+                                }
                             }
-                        }
+                        })
                     })
-                })
-                .catch(_err => res.status(500).send(_err))
+                    .catch(_err => res.status(500).send(_err))
+                : res.status(404).send({message: "post not found"})
         }
         else
         {
@@ -392,7 +393,7 @@ const deletePostDescription = (req, res) =>
     userController.verifyToken({_id, email, phone})
         .then((result) =>
             {
-                if (result.user.role === "admin")
+                if (result.user.role === "admin" || result.user.role === "system")
                 {
                     PostDescription.findById(req.body._id, (err, postDescription) =>
                     {

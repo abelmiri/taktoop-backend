@@ -3,7 +3,10 @@ import adminController from "../controllers/adminController"
 const adminRouter = (app) =>
 {
     app.route("/admin/users")
-        .post(adminController.getUsers)
+        .get(adminController.getUsers)
+
+    app.route("/admin/change-role")
+        .post(adminController.changeRole)
 }
 
 export default adminRouter
