@@ -65,90 +65,59 @@ const update = (req, res) =>
                             else
                             {
                                 delete req.body.is_predict
-                                if (req.files && req.files.picture)
-                                {
-                                    const {picture} = req.files
-                                    saveFile({folder: "pictures", file: picture})
-                                        .then((postMediaAddress) =>
-                                            {
-                                                delete req.body.created_date
-                                                delete req.body.creator_id
-
-                                                Post.findOneAndUpdate(
-                                                    {_id: req.body._id},
-                                                    {...req.body, picture: postMediaAddress},
-                                                    {new: true, useFindAndModify: false, runValidators: true},
-                                                    (err, updated) =>
-                                                    {
-                                                        if (err) res.status(500).send(err)
-                                                        else res.status(200).send(updated)
-                                                    })
-                                            },
-                                        )
-                                        .catch((postMediaResultErr) => res.status(500).send({message: "post media updating error", postMediaResultErr}))
-                                }
-                                else
-                                {
-                                    delete req.body.created_date
-                                    delete req.body.creator_id
-
-                                    Post.findOneAndUpdate(
-                                        {_id: req.body._id},
-                                        {...req.body},
-                                        {new: true, useFindAndModify: false, runValidators: true},
-                                        (err, updated) =>
-                                        {
-                                            if (err) res.status(500).send(err)
-                                            else res.status(200).send(updated)
-                                        })
-                                }
+                                checkPostDescriptionMedia(req, res)
                             }
                         })
                 }
                 else
                 {
-                    if (req.files && req.files.picture)
-                    {
-                        const {picture} = req.files
-                        saveFile({folder: "pictures", file: picture})
-                            .then((postMediaAddress) =>
-                                {
-                                    delete req.body.created_date
-                                    delete req.body.creator_id
-
-                                    Post.findOneAndUpdate(
-                                        {_id: req.body._id},
-                                        {...req.body, picture: postMediaAddress},
-                                        {new: true, useFindAndModify: false, runValidators: true},
-                                        (err, updated) =>
-                                        {
-                                            if (err) res.status(500).send(err)
-                                            else res.status(200).send(updated)
-                                        })
-                                },
-                            )
-                            .catch((postMediaResultErr) => res.status(500).send({message: "post media updating error", postMediaResultErr}))
-                    }
-                    else
-                    {
-                        delete req.body.created_date
-                        delete req.body.creator_id
-
-                        Post.findOneAndUpdate(
-                            {_id: req.body._id},
-                            {...req.body},
-                            {new: true, useFindAndModify: false, runValidators: true},
-                            (err, updated) =>
-                            {
-                                if (err) res.status(500).send(err)
-                                else res.status(200).send(updated)
-                            })
-                    }
+                    checkPostDescriptionMedia(req, res)
                 }
             }
             else res.status(401).send({message: "permission denied babe"})
         })
         .catch((result) => res.status(result.status).send({status: result.status, err: result.err}))
+}
+
+const checkPostDescriptionMedia = (req, res) =>
+{
+    if (req.files && req.files.picture)
+    {
+        const {picture} = req.files
+        saveFile({folder: "pictures", file: picture})
+            .then((postMediaAddress) =>
+                {
+                    delete req.body.created_date
+                    delete req.body.creator_id
+
+                    Post.findOneAndUpdate(
+                        {_id: req.body._id},
+                        {...req.body, picture: postMediaAddress},
+                        {new: true, useFindAndModify: false, runValidators: true},
+                        (err, updated) =>
+                        {
+                            if (err) res.status(500).send(err)
+                            else res.status(200).send(updated)
+                        })
+                },
+            )
+            .catch((postMediaResultErr) => res.status(500).send({message: "post media updating error", postMediaResultErr}))
+    }
+    else
+    {
+        delete req.body.created_date
+        delete req.body.creator_id
+
+        Post.findOneAndUpdate(
+            {_id: req.body._id},
+            {...req.body},
+            {new: true, useFindAndModify: false, runValidators: true},
+            (err, updated) =>
+            {
+                if (err) res.status(500).send(err)
+                else res.status(200).send(updated)
+            })
+    }
 }
 
 const deleteOne = (req, res) =>
@@ -220,7 +189,7 @@ const createUpdatePostDescription = (req, res) =>
                         })
                     }
                 }
-                else if (type === "picture" || type === "video")
+                else if (type === "picture" || type === "thumbnail" || type === "video")
                 {
                     const {content} = req.files
                     if (content)
@@ -402,7 +371,7 @@ const deletePostDescription = (req, res) =>
                         {
                             if (postDescription)
                             {
-                                if (postDescription.type === "picture" || postDescription.type === "video")
+                                if (postDescription.type === "picture" || postDescription.type === "thumbnail" || postDescription.type === "video")
                                     deleteFile({path: postDescription.content})
                                         .then(msg =>
                                         {

@@ -3,6 +3,7 @@ import cors from "cors"
 import express from "express"
 import fileUpload from "express-fileupload"
 import mongoose from "mongoose"
+import addHeaderAndCheckPermissions from "./functions/addHeaderAndCheckPermissions"
 import adminRouter from "./routes/adminRoute";
 import categoryRouter from "./routes/categoryRouter"
 import linkRouter from "./routes/linkRoute"
@@ -10,7 +11,6 @@ import postRouter from "./routes/postRouter"
 import rootRouter from "./routes/rootRouter"
 import siteMapRouter from "./routes/siteMapRouter";
 import userRouter from "./routes/userRouter"
-import addHeaderAndCheckPermissions from "./functions/addHeaderAndCheckPermissions"
 import notFoundRooter from "./routes/notFoundRouter"
 import data from "./data"
 

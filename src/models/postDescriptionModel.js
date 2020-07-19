@@ -10,7 +10,7 @@ const postDescriptionModel = new schema({
     },
     type: {
         type: String,
-        enum: ["description", "bold", "picture", "video"],
+        enum: ["description", "bold", "picture", "thumbnail", "video"],
         default: "description",
         required: "Enter type!",
         trim: true,
@@ -19,7 +19,7 @@ const postDescriptionModel = new schema({
         type: String,
         trim: true,
     },
-	order: Number,
+    order: Number,
     creator_id: {
         type: schema.Types.ObjectId,
     },
