@@ -93,10 +93,11 @@ const signUp = (req, res) =>
 const update = (req, res) =>
 {
     const {_id, password} = req.body
-    const {picture} = req.files
     delete req.body.created_date
     delete req.body.role
-    if (picture)
+    if (req.files && req.files.picture)
+    {
+        const {picture} = req.files
         saveFile({folder: "pictures", file: picture})
             .then((profileMediaAddress) =>
                 {
@@ -112,6 +113,7 @@ const update = (req, res) =>
                 },
             )
             .catch((profileMediaResultErr) => res.status(500).send({message: "user media saving error", profileMediaResultErr}))
+    }
     else user.findByIdAndUpdate(
         {_id, password},
         req.body,

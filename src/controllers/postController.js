@@ -20,9 +20,9 @@ const create = (req, res) =>
         {
             if (result.user.role === "admin" || result.user.role === "system")
             {
-                const {picture} = req.files
-                if (picture)
+                if (req.files && req.files.picture)
                 {
+                    const {picture} = req.files
                     saveFile({folder: "pictures", file: picture})
                         .then((postMediaAddress) =>
                             {
