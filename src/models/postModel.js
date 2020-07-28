@@ -23,6 +23,9 @@ const postModel = new schema({
         minLength: 10,
         maxLength: 250,
     },
+    keywords: {
+        type: String,
+    },
     picture: {
         type: String,
         required: "Enter picture!",

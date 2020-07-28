@@ -18,6 +18,15 @@ const postRouter = (app) =>
     app.route("/predict-post")
         .get(postController.getPredictPosts)
 
+    app.route("/most-viewed-post")
+        .get(postController.getMostViewedPosts)
+
+    app.route("/most-liked-post")
+        .get(postController.getMostLikedPosts)
+
+    app.route("/category-post")
+        .get(postController.getCategoryPosts)
+
     app.route("/post-description")
         .post(postController.createUpdatePostDescription)
         .patch(postController.createUpdatePostDescription)

@@ -1,4 +1,5 @@
 import mongoose from "mongoose"
+import categoryModel from "../models/categoryModel"
 import postModel from "../models/postModel"
 import postLikeModel from "../models/postLikeModel"
 import postDescriptionModel from "../models/postDescriptionModel"
@@ -6,6 +7,7 @@ import userController from "../controllers/userController"
 import saveFile from "../functions/saveFile"
 import deleteFile from "../functions/deleteFile"
 
+const Category = mongoose.model("category", categoryModel)
 const Post = mongoose.model("post", postModel)
 const PostLikeModel = mongoose.model("postLike", postLikeModel)
 const PostDescription = mongoose.model("postDescription", postDescriptionModel)
@@ -349,11 +351,54 @@ const getPredictPosts = (req, res) =>
     const limit = parseInt(req.query.limit) > 0 ? parseInt(req.query.limit) : 8
     const skip = (req.query.page - 1 > 0 ? req.query.page - 1 : 0) * limit
     const options = {sort: "-created_date", skip, limit}
-    Post.find({is_predict: {$gte: Date.now}}, null, options, (err, posts) =>
+    Post.find({is_predict: {$gte: Date.now()}}, null, options, (err, posts) =>
     {
         if (err) res.status(500).send(err)
         else res.send(posts)
     })
+}
+
+const getMostViewedPosts = (req, res) =>
+{
+    const limit = parseInt(req.query.limit) > 0 ? parseInt(req.query.limit) : 8
+    const skip = (req.query.page - 1 > 0 ? req.query.page - 1 : 0) * limit
+    const options = {sort: "-views_count", skip, limit}
+    Post.find(null, null, options, (err, posts) =>
+    {
+        if (err) res.status(500).send(err)
+        else res.send(posts)
+    })
+}
+
+const getMostLikedPosts = (req, res) =>
+{
+    const limit = parseInt(req.query.limit) > 0 ? parseInt(req.query.limit) : 8
+    const skip = (req.query.page - 1 > 0 ? req.query.page - 1 : 0) * limit
+    const options = {sort: "-likes_count", skip, limit}
+    Post.find(null, null, options, (err, posts) =>
+    {
+        if (err) res.status(500).send(err)
+        else res.send(posts)
+    })
+}
+
+const getCategoryPosts = (req, res) =>
+{
+    const limit = parseInt(req.query.limit) > 0 ? parseInt(req.query.limit) : 8
+    const skip = (req.query.page - 1 > 0 ? req.query.page - 1 : 0) * limit
+    const category_id = req.query.category_id
+    const options = {sort: "-created_date", skip, limit}
+    Category.find({parent_id: category_id}, {_id: 1}, (c_err, category_ids) =>
+    {
+        if (c_err) res.status(500).send(c_err)
+        else
+            Post.find({category_id: {$in: [...category_ids.map(c => c.id)]}}, null, options, (p_err, posts) =>
+            {
+                if (p_err) res.status(500).send(p_err)
+                else res.send(posts)
+            })
+    })
+
 }
 
 const deletePostDescription = (req, res) =>
@@ -474,6 +519,9 @@ const categoryController = {
     deletePostDescription,
     getBoldPosts,
     getPredictPosts,
+    getMostViewedPosts,
+    getMostLikedPosts,
+    getCategoryPosts,
     get,
     addNewLike,
     deleteLike,
