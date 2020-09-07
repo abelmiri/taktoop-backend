@@ -7,7 +7,7 @@ const Post = mongoose.model("post", postModel)
 
 const getRoutes = (req, res) =>
 {
-    let routes = "https://www.taktoopcasino.com\nhttps://www.taktoopcasino.com/about-us\n"
+    let routes = "https://www.analyz.site\nhttps://www.analyz.site/about-us\n"
     getCategories(routes)
         .then((categoryList) =>
             {
@@ -29,7 +29,7 @@ const getCategories = (list) =>
             else
             {
                 let categories = list
-                cats.forEach((cat) => categories += `https://www.taktoopcasino.com/category/${cat._id}\n`)
+                cats.forEach((cat) => categories += `https://www.analyz.site/category/${cat._id}\n`)
                 resolve(categories)
             }
         })
@@ -46,7 +46,7 @@ const getPosts = (list) =>
             else
             {
                 let posts = list
-                cats.forEach((cat) => posts += `https://www.taktoopcasino.com/post/${cat.title}\n`)
+                cats.forEach((cat) => posts += `https://www.analyz.site/post/${cat.title}\n`)
                 resolve(posts)
             }
         })
