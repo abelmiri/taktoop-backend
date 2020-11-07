@@ -41,6 +41,10 @@ const postModel = new schema({
         type: Number,
         default: 0,
     },
+    is_hidden: {
+        type: Boolean,
+        default: false,
+    },
     views_count: {
         type: Number,
         default: 0,

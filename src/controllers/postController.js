@@ -239,13 +239,118 @@ const createUpdatePostDescription = (req, res) =>
         .catch((result) => res.status(result.status).send({status: result.status, err: result.err}))
 }
 
+const getPanelPosts = (req, res) =>
+{
+    const {title, page, category_id} = req.query
+    const {_id, email, phone} = req.headers.authorization
+    const limit = parseInt(req.query.limit) > 0 ? parseInt(req.query.limit) : 10
+    const skip = (page - 1 > 0 ? page - 1 : 0) * limit
+    const options = {sort: "-created_date", skip, limit}
+    userController.verifyToken({_id, email, phone})
+        .then((result) =>
+        {
+            if (result.user.role === "admin" || result.user.role === "system")
+            {
+                Post.find(title ? {title} : category_id ? {category_id} : null, null, options, (postErr, posts) =>
+                {
+                    if (postErr) res.status(500).send(postErr)
+                    else if (title)
+                    {
+                        posts[0] ? addNewView(posts[0]._id)
+                                .then(_ =>
+                                {
+                                    PostDescription.find({post_id: posts[0]._id}, null, {sort: "order"}, (postDesErr, postDescriptions) =>
+                                    {
+                                        if (postDesErr) res.status(500).send(postDesErr)
+                                        else
+                                        {
+                                            if (req.headers.authorization)
+                                            {
+                                                const user_id = req.headers.authorization._id
+                                                PostLikeModel.findOne({user_id, post_id: posts[0]._id}, (postLikeErr, takenLike) =>
+                                                {
+                                                    if (postLikeErr) res.status(500).send(postLikeErr)
+                                                    else
+                                                    {
+                                                        const is_liked = takenLike !== null
+                                                        userController.getUser(posts[0].creator_id)
+                                                            .then(briefUser =>
+                                                            {
+                                                                let fullPost = {...posts[0]._doc}
+                                                                fullPost.creator_name = briefUser.name
+                                                                fullPost.creator_picture = briefUser.picture
+                                                                fullPost.post_descriptions = postDescriptions
+                                                                fullPost.is_liked = is_liked
+                                                                res.send(fullPost)
+                                                            })
+                                                            .catch(error =>
+                                                            {
+                                                                console.log("user fetch error", error)
+                                                                let fullPost = {...posts[0]._doc}
+                                                                fullPost.post_descriptions = postDescriptions
+                                                                fullPost.is_liked = is_liked
+                                                                res.send(fullPost)
+                                                            })
+                                                    }
+                                                })
+                                            }
+                                            else
+                                            {
+                                                userController.getUser(posts[0].creator_id)
+                                                    .then(briefUser =>
+                                                    {
+                                                        let fullPost = {...posts[0]._doc}
+                                                        fullPost.creator_name = briefUser.name
+                                                        fullPost.creator_picture = briefUser.picture
+                                                        fullPost.post_descriptions = postDescriptions
+                                                        res.send(fullPost)
+                                                    })
+                                                    .catch(error =>
+                                                    {
+                                                        console.log("user fetch error", error)
+                                                        let fullPost = {...posts[0]._doc}
+                                                        fullPost.post_descriptions = postDescriptions
+                                                        res.send(fullPost)
+                                                    })
+                                            }
+                                        }
+                                    })
+                                })
+                                .catch(_err => res.status(500).send(_err))
+                            : res.status(404).send({message: "post not found"})
+                    }
+                    else
+                    {
+                        if (req.headers.authorization)
+                        {
+                            const user_id = req.headers.authorization._id
+                            PostLikeModel.find({user_id, post_id: {$in: posts.reduce((sum, post) => [...sum, post._id], [])}}, (err, likes) =>
+                            {
+                                if (err) res.status(500).send(err)
+                                else
+                                {
+                                    const postsObj = posts.reduce((sum, conversation) => ({...sum, [conversation._id]: {...conversation.toJSON()}}), {})
+                                    likes.forEach(like => postsObj[like.post_id].is_liked = true)
+                                    res.send(Object.values(postsObj))
+                                }
+                            })
+                        }
+                        else res.send(posts)
+                    }
+                })
+            }
+            else res.status(401).send({message: "panel post permission denied babe"})
+        })
+        .catch((result) => res.status(result.status).send({status: result.status, err: result.err}))
+}
+
 const get = (req, res) =>
 {
     const {title, page, category_id} = req.query
     const limit = parseInt(req.query.limit) > 0 ? parseInt(req.query.limit) : 10
     const skip = (page - 1 > 0 ? page - 1 : 0) * limit
     const options = {sort: "-created_date", skip, limit}
-    Post.find(title ? {title} : category_id ? {category_id} : null, null, options, (err, posts) =>
+    Post.find(title ? {title, is_hidden: false} : category_id ? {category_id, is_hidden: false} : {is_hidden: false}, null, options, (err, posts) =>
     {
         if (err) res.status(500).send(err)
         else if (title)
@@ -339,7 +444,7 @@ const getBoldPosts = (req, res) =>
     const limit = parseInt(req.query.limit) > 0 ? parseInt(req.query.limit) : 8
     const skip = (req.query.page - 1 > 0 ? req.query.page - 1 : 0) * limit
     const options = {sort: "-created_date", skip, limit}
-    Post.find({is_bold: true}, null, options, (err, posts) =>
+    Post.find({is_bold: true, is_hidden: false}, null, options, (err, posts) =>
     {
         if (err) res.status(500).send(err)
         else res.send(posts)
@@ -351,7 +456,7 @@ const getPredictPosts = (req, res) =>
     const limit = parseInt(req.query.limit) > 0 ? parseInt(req.query.limit) : 8
     const skip = (req.query.page - 1 > 0 ? req.query.page - 1 : 0) * limit
     const options = {sort: "-created_date", skip, limit}
-    Post.find({is_predict: {$gte: Date.now()}}, null, options, (err, posts) =>
+    Post.find({is_predict: {$gte: Date.now()}, is_hidden: false}, null, options, (err, posts) =>
     {
         if (err) res.status(500).send(err)
         else res.send(posts)
@@ -363,7 +468,7 @@ const getMostViewedPosts = (req, res) =>
     const limit = parseInt(req.query.limit) > 0 ? parseInt(req.query.limit) : 8
     const skip = (req.query.page - 1 > 0 ? req.query.page - 1 : 0) * limit
     const options = {sort: "-views_count", skip, limit}
-    Post.find(null, null, options, (err, posts) =>
+    Post.find({is_hidden: false}, null, options, (err, posts) =>
     {
         if (err) res.status(500).send(err)
         else res.send(posts)
@@ -375,7 +480,7 @@ const getMostLikedPosts = (req, res) =>
     const limit = parseInt(req.query.limit) > 0 ? parseInt(req.query.limit) : 8
     const skip = (req.query.page - 1 > 0 ? req.query.page - 1 : 0) * limit
     const options = {sort: "-likes_count", skip, limit}
-    Post.find(null, null, options, (err, posts) =>
+    Post.find({is_hidden: false}, null, options, (err, posts) =>
     {
         if (err) res.status(500).send(err)
         else res.send(posts)
@@ -388,7 +493,7 @@ const getCategoryPosts = (req, res) =>
     const skip = (req.query.page - 1 > 0 ? req.query.page - 1 : 0) * limit
     const category_id = req.query.category_id
     const options = {sort: "-created_date", skip, limit}
-    Category.find({parent_id: category_id}, {_id: 1}, (c_err, category_ids) =>
+    Category.find({parent_id: category_id, is_hidden: false}, {_id: 1}, (c_err, category_ids) =>
     {
         if (c_err) res.status(500).send(c_err)
         else
